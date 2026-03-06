@@ -41,8 +41,41 @@ int main(int argc, char *argv[])
 
 	// Complete.....
 	// First: establish the connection
+        int err = connect(sd, (struct sockaddr *) &server_addr,  sizeof(server_addr));
+	if (err == -1) {
+		printf("Error en connect\n");
+		return -1;
+	}
 
-        close (sd);
+        char buffer[MAX_LINE];
+        int n;
+
+        while(1){
+                n = readLine(0, buffer, 256);
+                if(n == -1){
+                        printf("Error en readLine\n");
+                        break;
+                }
+
+                err = sendMessage(sd, buffer, strlen(buffer)+1); // Envía la cadena y '\0'
+                if(err == -1){
+                        printf("Error en envío\n");
+                        break;
+                }
+
+                n = readLine(sd, buffer, 256);
+                if(n == -1){
+                        printf("Error en readLine\n");
+                        break;
+                }
+
+                printf("Recibido: %s\n", buffer);
+                if(strcmp(buffer, "EXIT") == 0){
+                        close (sd);
+                        break;
+                }
+        }
+
 
         return(0);
 }
