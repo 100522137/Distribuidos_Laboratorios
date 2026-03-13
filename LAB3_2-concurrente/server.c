@@ -1,11 +1,13 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include "lines.h"
 
 #define MAX_LINE 	256
@@ -15,6 +17,8 @@ int main(int argc, char *argv[])
 	int val;
 	int err;
         struct sockaddr_in server_addr,  client_addr;
+
+        signal(SIGPIPE, SIG_IGN);
         
         sd =  socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (sd < 0) {
@@ -61,7 +65,7 @@ int main(int argc, char *argv[])
                                 printf("Error en accept\n");
                                 return -1;
                         }
-                        printf("conexión aceptada de IP: %d   Puerto: %d\n",
+                        printf("conexión aceptada de IP: %s   Puerto: %d\n",
                                         inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
 
@@ -72,6 +76,10 @@ int main(int argc, char *argv[])
                         n = readLine(sc, buffer, 256);
                         if(n == -1){
                                 printf("Error en readLine\n");
+                                break;
+                        }
+                        if(n == 0){
+                                printf("Cliente desconectado\n");
                                 break;
                         }
 
@@ -87,7 +95,9 @@ int main(int argc, char *argv[])
                                 break;
                         }
                 }
+                close(sc);
         }
+        close(sd);
         return(0);
 }
 
