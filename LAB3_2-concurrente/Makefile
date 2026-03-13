@@ -1,4 +1,4 @@
-BIN_FILES  = test client server
+BIN_FILES  = test_con cliente_con server_con
 
 CC = gcc
 
@@ -12,14 +12,14 @@ LDLIBS = -lpthread
 all: $(BIN_FILES)
 .PHONY : all
 
-test: test.o lines.o
+test_con: test_con.o lines.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-client: client.o lines.o
+cliente_con: cliente_con.o lines.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-server: server.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+server_con: server_con.o lines.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@ 
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CFLAGS) -c $<

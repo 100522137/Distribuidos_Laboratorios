@@ -26,7 +26,7 @@ void *nombre_funcion(void *arg) {
                 break;
         }
         if(n == 0){
-                printf("Cliente %s desconectado\n", inet_ntoa(client_addr.sin_addr));
+                printf("Cliente desconectado\n");
                 break;
         }
 
@@ -36,7 +36,7 @@ void *nombre_funcion(void *arg) {
                 break;
         }
 
-        printf("Recibido de %s: %s\n", inet_ntoa(client_addr.sin_addr), buffer);
+        printf("Recibido: %s\n", buffer);
         if(strcmp(buffer, "EXIT") == 0){
                 close (sc);
                 break;
