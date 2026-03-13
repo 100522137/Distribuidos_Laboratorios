@@ -1,0 +1,116 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <pthread.h>
+#include "lines.h"
+
+#define MAX_LINE 	256
+
+
+void *nombre_funcion(void *arg) {
+        int sc = *((int *)arg);
+        char buffer[MAX_LINE];
+        int n;
+        int err;
+        while(1){
+        n = readLine(sc, buffer, 256);
+        if(n == -1){
+                printf("Error en readLine\n");
+                break;
+        }
+        if(n == 0){
+                printf("Cliente %s desconectado\n", inet_ntoa(client_addr.sin_addr));
+                break;
+        }
+
+        err = sendMessage(sc, buffer, strlen(buffer)+1); // Envía la cadena y '\0'
+        if(err == -1){
+                printf("Error en envío\n");
+                break;
+        }
+
+        printf("Recibido de %s: %s\n", inet_ntoa(client_addr.sin_addr), buffer);
+        if(strcmp(buffer, "EXIT") == 0){
+                close (sc);
+                break;
+        }
+        }
+        close(sc);
+        return NULL;
+}
+
+
+int main(int argc, char *argv[])
+{
+        int sd, sc;
+	int val;
+	int err;
+        struct sockaddr_in server_addr,  client_addr;
+
+        signal(SIGPIPE, SIG_IGN);
+        
+        sd =  socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (sd < 0) {
+                perror("Error in socket");
+                exit(1);
+        }
+
+        val = 1;
+        err = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+                sizeof(int));
+        if (err < 0) {
+                perror("Error in opction");
+                exit(1);
+        }
+
+
+	// Complete .....
+        bzero((char *)&server_addr, sizeof(server_addr));
+    	server_addr.sin_family      = AF_INET;
+    	server_addr.sin_addr.s_addr = INADDR_ANY;
+    	server_addr.sin_port        = htons(atoi(argv[1]));
+
+    	err = bind(sd, (const struct sockaddr *)&server_addr,
+			sizeof(server_addr));
+	if (err == -1) {
+		printf("Error en bind\n");
+		return -1;
+	}
+        
+        err = listen(sd, SOMAXCONN);
+	if (err == -1) {
+		printf("Error en listen\n");
+		return -1;
+	}
+
+        size_t size = sizeof(client_addr);
+
+
+        while(1){
+                printf("esperando conexion\n");
+                sc = accept(sd, (struct sockaddr *)&client_addr, (socklen_t *)&size);        
+                if (sc == -1) {
+                                printf("Error en accept\n");
+                                return -1;
+                        }
+                printf("conexión aceptada de IP: %s   Puerto: %d\n",
+                                inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+                pthread_t thread_id;
+                err = pthread_create(&thread_id, NULL, nombre_funcion, (void *)&sc);
+                if (err != 0) {
+                        printf("Error en pthread_create\n");
+                        return -1;
+                }
+                pthread_detach(thread_id);
+        }
+        close(sd);
+        return(0);
+}
+
