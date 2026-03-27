@@ -1,5 +1,9 @@
 # Ignora todo
 *
+
+# Excepto los directorios (para que Git pueda entrar en ellos)
+!*/
+
 # Excepto el código fuente
 !*.txt
 !*.py
