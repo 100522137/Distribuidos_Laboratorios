@@ -1,0 +1,7 @@
+# Ignora todo
+*
+# Excepto el código fuente
+!*.c
+!*.h
+!Makefile
+!.gitignore
