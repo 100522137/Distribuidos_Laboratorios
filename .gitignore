@@ -1,6 +1,7 @@
 # Ignora todo
 *
 # Excepto el código fuente
+!*.txt
 !*.py
 !*.c
 !*.h
